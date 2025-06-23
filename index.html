@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人權守護者 - 互動式桌遊</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', '微軟正黑體', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .game-title {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .game-subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .card-container {
+            background: #ffffff;
+            border: 3px solid #3498db;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+
+        .card-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .card-type {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.4em;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .card-content {
+            color: #34495e;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .option-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #2980b9, #3498db);
+        }
+
+        .correct {
+            background: linear-gradient(135deg, #27ae60, #2ecc71) !important;
+        }
+
+        .incorrect {
+            background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+        }
+
+        .control-buttons {
+            margin-top: 30px;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .result-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .game-over {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            background: #ecf0f1;
+            border-radius: 10px;
+            height: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">🛡️ 人權守護者</h1>
+        <p class="game-subtitle">透過遊戲學習人權知識，成為人權的守護者！</p>
+        
+        <div class="game-stats">
+            <div class="stat">
+                <div class="stat-value" id="score">0</div>
+                <div class="stat-label">得分</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="round">1</div>
+                <div class="stat-label">回合</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="correct">0</div>
+                <div class="stat-label">正確</div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <div id="game-area">
+            <div class="card-container" id="card">
+                <div class="card-type" id="card-type">情境題</div>
+                <div class="card-title" id="card-title">載入中...</div>
+                <div class="card-content" id="card-content">正在準備遊戲...</div>
+                <div class="options" id="options"></div>
+            </div>
+        </div>
+
+        <div class="result-message" id="result" style="display: none;"></div>
+
+        <div class="control-buttons">
+            <button class="control-btn" onclick="nextCard()">下一題</button>
+            <button class="control-btn" onclick="restartGame()">重新開始</button>
+            <button class="control-btn" onclick="showRules()">遊戲規則</button>
+        </div>
+    </div>
+
+    <script>
+        // 遊戲數據
+        const gameData = {
+            scenarios: [
+                {
+                    type: "言論自由",
+                    title: "網路言論爭議",
+                    content: "小明在社群媒體上批評政府政策，結果被要求刪除貼文。這種情況下，最適當的人權觀點是什麼？",
+                    options: [
+                        "政府有權管制所有網路言論",
+                        "言論自由是基本人權，應受保護",
+                        "只有正面言論才應該被允許",
+                        "社群媒體應該自行審查所有內容"
+                    ],
+                    correct: 1,
+                    explanation: "言論自由是基本人權，包括批評政府的權利。雖然有一些限制，但不能因為批評政府就被禁止發言。"
+                },
+                {
+                    type: "教育權",
+                    title: "教育機會平等",
+                    content: "某地區的女孩因為家庭經濟困難和傳統觀念，無法上學。根據人權原則，應該如何處理？",
+                    options: [
+                        "尊重傳統文化，不予干涉",
+                        "教育是基本人權，應確保所有兒童都能接受教育",
+                        "只有男孩需要教育",
+                        "教育是奢侈品，不是必需品"
+                    ],
+                    correct: 1,
+                    explanation: "教育權是基本人權，不分性別。所有兒童都應該有平等的受教育機會。"
+                },
+                {
+                    type: "工作權",
+                    title: "職場歧視問題",
+                    content: "阿華因為身心障礙而在求職時遭到拒絕，儘管他完全有能力勝任該工作。這種情況違反了什麼人權原則？",
+                    options: [
+                        "雇主有選擇員工的自由",
+                        "平等就業權和反歧視原則",
+                        "身心障礙者不適合工作",
+                        "這是正常的商業決策"
+                    ],
+                    correct: 1,
+                    explanation: "所有人都有平等的工作權利，不應因身心障礙而遭受歧視。雇主應該基於能力而非偏見來僱用員工。"
+                },
+                {
+                    type: "隱私權",
+                    title: "個人資料保護",
+                    content: "某公司在未經同意的情況下，將客戶的個人資料出售給其他廠商。這種行為侵犯了什麼權利？",
+                    options: [
+                        "沒有侵犯任何權利",
+                        "隱私權和個人資料保護權",
+                        "只是商業行為",
+                        "客戶應該預期會有這種情況"
+                    ],
+                    correct: 1,
+                    explanation: "個人資料保護是隱私權的重要組成部分。未經同意使用他人資料是侵犯隱私權的行為。"
+                },
+                {
+                    type: "宗教自由",
+                    title: "宗教信仰衝突",
+                    content: "學校要求所有學生參加特定宗教儀式，但有些學生信仰不同宗教。學校應該如何處理？",
+                    options: [
+                        "強制所有學生參加",
+                        "尊重不同宗教信仰，提供替代方案",
+                        "禁止所有宗教活動",
+                        "只允許多數人的宗教"
+                    ],
+                    correct: 1,
+                    explanation: "宗教自由包括信仰的自由和不被強迫參與不同信仰活動的自由。學校應該尊重所有學生的宗教背景。"
+                },
+                {
+                    type: "居住權",
+                    title: "強制拆遷爭議",
+                    content: "政府為了開發計劃強制拆除居民房屋，但未提供適當補償。這種情況涉及什麼人權問題？",
+                    options: [
+                        "政府有絕對的土地使用權",
+                        "居住權和財產權的保護",
+                        "開發比個人權利更重要",
+                        "居民應該無條件配合"
+                    ],
+                    correct: 1,
+                    explanation: "居住權是基本人權，強制拆遷必須有正當理由、程序和適當補償。"
+                },
+                {
+                    type: "健康權",
+                    title: "醫療資源分配",
+                    content: "偏遠地區缺乏醫療資源，居民無法獲得基本醫療服務。政府應該承擔什麼責任？",
+                    options: [
+                        "偏遠地區本來就不便，這是正常的",
+                        "政府有義務確保所有人都能獲得基本醫療服務",
+                        "居民應該自己搬到城市",
+                        "醫療是商品，能負擔的人才能享受"
+                    ],
+                    correct: 1,
+                    explanation: "健康權是基本人權，政府有義務確保所有公民都能獲得基本醫療服務，不論居住地點。"
+                },
+                {
+                    type: "集會自由",
+                    title: "和平抗議權",
+                    content: "市民想要為環保議題舉行和平示威，但政府以維護秩序為由禁止。這種做法合理嗎？",
+                    options: [
+                        "政府可以禁止所有示威活動",
+                        "和平集會是基本權利，不應任意禁止",
+                        "只有政府支持的活動才能舉行",
+                        "示威總是會造成麻煩"
+                    ],
+                    correct: 1,
+                    explanation: "和平集會和示威是基本人權，政府不能僅以維護秩序為由就禁止和平抗議。"
+                },
+                {
+                    type: "兒童權利",
+                    title: "童工問題",
+                    content: "某工廠僱用未成年兒童工作，理由是幫助貧困家庭增加收入。這種做法符合人權原則嗎？",
+                    options: [
+                        "幫助家庭經濟是好事",
+                        "兒童有受教育的權利，不應從事勞動",
+                        "窮人家的孩子本來就要工作",
+                        "只要給錢就沒問題"
+                    ],
+                    correct: 1,
+                    explanation: "兒童有受教育和受保護的權利，童工違反了兒童權利公約，應該被禁止。"
+                },
+                {
+                    type: "平等權",
+                    title: "性別平等",
+                    content: "某公司同工不同酬，女性員工的薪資比男性員工低。這種情況違反了什麼原則？",
+                    options: [
+                        "市場機制決定薪資",
+                        "性別平等和同工同酬原則",
+                        "男女本來就不同",
+                        "公司有定價自由"
+                    ],
+                    correct: 1,
+                    explanation: "性別平等是基本人權原則，同工同酬是重要的實現方式，不應因性別而有薪資差異。"
+                }
+            ]
+        };
+
+        // 遊戲狀態
+        let currentCard = 0;
+        let score = 0;
+        let correctAnswers = 0;
+        let gameCards = [];
+        let answered = false;
+
+        // 初始化遊戲
+        function initGame() {
+            gameCards = [...gameData.scenarios].sort(() => Math.random() - 0.5);
+            currentCard = 0;
+            score = 0;
+            correctAnswers = 0;
+            answered = false;
+            updateStats();
+            showCard();
+        }
+
+        // 顯示卡片
+        function showCard() {
+            if (currentCard >= gameCards.length) {
+                showGameOver();
+                return;
+            }
+
+            const card = gameCards[currentCard];
+            document.getElementById('card-type').textContent = card.type;
+            document.getElementById('card-title').textContent = card.title;
+            document.getElementById('card-content').textContent = card.content;
+            
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            
+            card.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = () => selectOption(index);
+                optionsDiv.appendChild(btn);
+            });
+
+            document.getElementById('result').style.display = 'none';
+            answered = false;
+            updateProgress();
+        }
+
+        // 選擇選項
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            
+            answered = true;
+            const card = gameCards[currentCard];
+            const options = document.querySelectorAll('.option-btn');
+            
+            options.forEach((btn, index) => {
+                if (index === card.correct) {
+                    btn.classList.add('correct');
+                } else if (index === selectedIndex && index !== card.correct) {
+                    btn.classList.add('incorrect');
+                }
+                btn.disabled = true;
+            });
+
+            const resultDiv = document.getElementById('result');
+            if (selectedIndex === card.correct) {
+                score += 10;
+                correctAnswers++;
+                resultDiv.textContent = `正確！${card.explanation}`;
+                resultDiv.className = 'result-message success';
+            } else {
+                resultDiv.textContent = `錯誤！正確答案是：${card.options[card.correct]}。${card.explanation}`;
+                resultDiv.className = 'result-message error';
+            }
+            
+            resultDiv.style.display = 'block';
+            updateStats();
+        }
+
+        // 下一張卡片
+        function nextCard() {
+            currentCard++;
+            showCard();
+        }
+
+        // 更新統計資訊
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('round').textContent = currentCard + 1;
+            document.getElementById('correct').textContent = correctAnswers;
+        }
+
+        // 更新進度條
+        function updateProgress() {
+            const progress = ((currentCard + 1) / gameCards.length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+        }
+
+        // 顯示遊戲結束
+        function showGameOver() {
+            const gameArea = document.getElementById('game-area');
+            const percentage = (correctAnswers / gameCards.length * 100).toFixed(1);
+            
+            gameArea.innerHTML = `
+                <div class="game-over">
+                    <h2>🎉 遊戲結束！</h2>
+                    <p>你的最終得分：<strong>${score}</strong></p>
+                    <p>正確率：<strong>${percentage}%</strong></p>
+                    <p>答對題目：<strong>${correctAnswers}/${gameCards.length}</strong></p>
+                    <br>
+                    <p>${getGradeMessage(percentage)}</p>
+                </div>
+            `;
+        }
+
+        // 獲取評級訊息
+        function getGradeMessage(percentage) {
+            if (percentage >= 90) return "🏆 人權專家！你對人權有深度的理解！";
+            if (percentage >= 80) return "🥇 人權守護者！你很了解人權概念！";
+            if (percentage >= 70) return "🥈 人權支持者！繼續學習人權知識！";
+            if (percentage >= 60) return "🥉 人權初學者！多了解人權議題會更好！";
+            return "📚 需要加強！建議多學習人權相關知識！";
+        }
+
+        // 重新開始遊戲
+        function restartGame() {
+            initGame();
+        }
+
+        // 顯示規則
+        function showRules() {
+            alert(`
+🎮 人權守護者遊戲規則：
+
+📝 遊戲目標：
+通過回答人權相關問題，學習和了解各種人權概念
+
+🎯 遊戲玩法：
+1. 閱讀情境描述
+2. 從四個選項中選擇最符合人權原則的答案
+3. 每答對一題得10分
+4. 完成所有題目後查看最終成績
+
+📊 評分標準：
+🏆 90%以上：人權專家
+🥇 80-89%：人權守護者  
+🥈 70-79%：人權支持者
+🥉 60-69%：人權初學者
+📚 60%以下：需要加強
+
+💡 學習重點：
+- 言論自由與表達權
+- 教育權與平等機會
+- 工作權與反歧視
+- 隱私權與資料保護
+- 宗教自由與信仰
+- 居住權與財產權
+- 健康權與醫療
+- 集會自由與示威權
+- 兒童權利保護
+- 性別平等原則
+
+開始遊戲，成為人權的守護者吧！
+            `);
+        }
+
+        // 啟動遊戲
+        window.onload = function() {
+            initGame();
+        };
+    </script>
+</body>
+</html>
