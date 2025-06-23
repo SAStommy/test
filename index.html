@@ -837,4 +837,139 @@
         // 更新UI
         function updateUI() {
             document.getElementById('currentPosition').textContent = boardSpaces[gameState.playerPosition].name;
-            document.getElementById('learningPoints').textContent = game
+            document.getElementById('learningPoints').textContent = gameState.learningPoints;
+            document.getElementById('completedRounds').textContent = gameState.completedRounds;
+            document.getElementById('earnedBadges').textContent = `${gameState.earnedBadges.size}/9`;
+            
+            // 更新玩家等級
+            const level = getPlayerLevel(gameState.learningPoints);
+            document.getElementById('playerLevel').textContent = level;
+        }
+
+        // 獲取玩家等級
+        function getPlayerLevel(points) {
+            if (points >= 150) return "人權大師 🏆";
+            if (points >= 120) return "人權專家 🥇";
+            if (points >= 90) return "人權守護者 🛡️";
+            if (points >= 60) return "人權支持者 👥";
+            if (points >= 30) return "人權學徒 📚";
+            return "初學者 🌱";
+        }
+
+        // 重置遊戲
+        function resetGame() {
+            gameState = {
+                playerPosition: 0,
+                learningPoints: 0,
+                completedRounds: 0,
+                earnedBadges: new Set(),
+                visitedSpaces: new Set(),
+                isRolling: false
+            };
+            
+            // 重置視覺效果
+            document.querySelectorAll('.board-space').forEach(space => {
+                space.classList.remove('current', 'visited');
+            });
+            
+            document.querySelectorAll('.badge').forEach(badge => {
+                badge.classList.remove('earned');
+            });
+            
+            document.getElementById('dice').textContent = '?';
+            document.getElementById('rollButton').textContent = '擲骰子開始冒險！';
+            
+            updateUI();
+            positionPlayer();
+        }
+
+        // 窗口大小改變時重新定位
+        window.addEventListener('resize', () => {
+            setTimeout(() => {
+                positionPlayer();
+            }, 100);
+        });
+
+        // 遊戲初始化
+        window.addEventListener('load', () => {
+            initGame();
+            
+            // 添加鍵盤快捷鍵
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && !gameState.isRolling) {
+                    e.preventDefault();
+                    rollDice();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetGame();
+                }
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+        });
+
+        // 點擊空間顯示詳情
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.board-space')) {
+                const spaceElement = e.target.closest('.board-space');
+                const spaceIndex = parseInt(spaceElement.id.split('-')[1]);
+                const space = boardSpaces[spaceIndex];
+                
+                if (gameState.visitedSpaces.has(spaceIndex) || spaceIndex === gameState.playerPosition) {
+                    showSpaceDetails(space, spaceIndex);
+                }
+            }
+        });
+
+        // 顯示空間詳情
+        function showSpaceDetails(space, index) {
+            let description = space.description || `這是${space.name}，一個重要的人權學習站點。`;
+            
+            if (space.type === 'learning') {
+                description += `\n\n在這裡你可以深入學習${space.name}的相關知識，了解其在現代社會中的重要性和應用。`;
+            }
+            
+            showEventModal(space.icon, space.name, description);
+        }
+
+        // 添加成就系統提示
+        function checkAchievements() {
+            const achievements = [];
+            
+            if (gameState.completedRounds >= 1 && !localStorage.getItem('achievement_first_round')) {
+                achievements.push("🎯 首次完成一輪！");
+                localStorage.setItem('achievement_first_round', 'true');
+            }
+            
+            if (gameState.earnedBadges.size >= 5 && !localStorage.getItem('achievement_half_badges')) {
+                achievements.push("🏅 獲得一半徽章！");
+                localStorage.setItem('achievement_half_badges', 'true');
+            }
+            
+            if (gameState.earnedBadges.size === 9 && !localStorage.getItem('achievement_all_badges')) {
+                achievements.push("👑 收集全部徽章！");
+                localStorage.setItem('achievement_all_badges', 'true');
+            }
+            
+            if (gameState.learningPoints >= 100 && !localStorage.getItem('achievement_century')) {
+                achievements.push("💯 學習點數破百！");
+                localStorage.setItem('achievement_century', 'true');
+            }
+            
+            if (achievements.length > 0) {
+                setTimeout(() => {
+                    showEventModal("🎉", "恭喜達成成就！", achievements.join('\n'));
+                }, 1000);
+            }
+        }
+
+        // 修改movePlayer函數以檢查成就
+        const originalMovePlayer = movePlayer;
+        movePlayer = function(steps) {
+            originalMovePlayer(steps);
+            setTimeout(checkAchievements, 1500);
+        };
+    </script>
+</body>
+</html>
